@@ -1,39 +1,48 @@
-class Vendedores {
-	var certificaciones
-	var puntajePorCertificaciones
+class Vendedor {
+	var certificaciones = #{}
 	
-	method esVersatil() { return certificaciones >= 3 }
-	method esFirme() { return puntajePorCertificaciones >= 30 }
-	method puedeTrabajar(provincia)
+	method esVersatil() { return 
+		certificaciones.size() >= 3 and 
+		certificaciones.any {c=>c.esProducto()} and certificaciones.any {c=> not c.esProducto()} }
+	method esFirme() { return certificaciones.sum {c=>c.puntos() >= 30 } }
+	method puedeTrabajar(ciudad)
+	method esInfluyente()
+	method esVendedorFisico() 
 }
 
-class VendedorFijo inherits Vendedores {
-	var ciudad
+class VendedorFijo inherits Vendedor {
+	var ciudades
 	
-	method ciudadEnLaQueVive() { return ciudad }
-	method esInfluyente() {  }
+	method ciudadEnLaQueVive() { return ciudades }
+	override method puedeTrabajar(ciudad) { }
+	override method esInfluyente() { return false }
+	override method esVendedorFisico() {return true} 
 }
 
-class VendedorViajante inherits Vendedores {
-	var property provincias = []
+class VendedorViajante inherits Vendedor {
+	var property provinciasHabilitadas = []
 
-	method provinciaEnLaQuePuedeTrabajar(provincia) { return provincia == provincias } 
-	method esInfluyente() { provincias.sum{p=>p.poblacion() >= 10000000} }
+	method provinciaEnLaQuePuedeTrabajar(provincia) { return provincia == provinciasHabilitadas } 
+	override method puedeTrabajar(ciudad) { }
+	override method esInfluyente() { provinciasHabilitadas.sum{p=>p.poblacionQueTiene().Provincia() >= 10000000} }
+	override method esVendedorFisico() {return true}
 }
 
-class ComercioCorresponsal inherits Vendedores {
-	var ciudades = []
-	var provincias = []
+class ComercioCorresponsal inherits Vendedor {
+	var ciudadesHabilitadas = []
+	var provinciasHabilitadas = []
 	
-	method ciudadQueTieneSucursal(ciudad) { return ciudad == ciudades }
-	method esInfluyente() { ciudades.sum{c=>c.ciudadQueTieneSucursal() > 5 or provincias.sum() > 3 } }
+	method ciudadQueTieneSucursal(ciudad) { return ciudad == ciudadesHabilitadas }
+	override method puedeTrabajar(ciudad) { }
+	override method esInfluyente() { ciudadesHabilitadas.sum{c=>c.ciudadQueTieneSucursal() > 5 or provinciasHabilitadas.sum() > 3 } }
+	override method esVendedorFisico() {return false}
 }
 
-object certificaciones {
+class Certificaciones {
 	var property puntos = 0
 		
 	method puntos() { return puntos }
-	method esProducto() { return true } 
+	method esProducto() { return false } 
 }
 
 class Provincia {
